@@ -6,6 +6,9 @@ import {
   Param,
   Delete,
   Patch,
+  UsePipes,
+  ValidationPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { Board, BoardStatus } from './boards.model';
 import { BoardsService } from './boards.service';
@@ -21,22 +24,21 @@ export class BoardsController {
   }
 
   @Post('/')
-  createBoard(
-    // @Body('title') title: string,
-    // @Body('description') description: string,
-    @Body() createBoardDto: CreateBoardDto,
-  ) {
+  @UsePipes(ValidationPipe)
+  createBoard(@Body() createBoardDto: CreateBoardDto) {
     return this.boardsService.createBoard(createBoardDto);
   }
 
   @Get('/:id')
   getBoardById(@Param('id') id: string): Board {
-    return this.boardsService.getBoardById(id);
+    const board = this.boardsService.getBoardById(id);
+    if (!board) throw new NotFoundException('아이디를 찾을 수 없습니다.');
+    return board;
   }
 
   @Delete('/:id')
   deleteBoardById(@Param('id') id: string): void {
-    return this.boardsService.deleteBoardById(id);
+    this.boardsService.deleteBoardById(id);
   }
 
   @Patch('/:id/status')
